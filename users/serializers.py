@@ -4,7 +4,7 @@ Serializers for the users API.
 from django.contrib.auth import get_user_model, authenticate
 from django.utils.translation import gettext as _
 
-from rest_framework import serializers
+from rest_framework import serializers, exceptions
 
 from users.models import UserProfile
 
@@ -59,6 +59,30 @@ class UserProfileSerializer(serializers.ModelSerializer):
             zip_code=validated_data.get('zip_code', ''),
         )
         return profile
+
+    def update(self, instance, validated_data):
+        """Update a user with a new password and/or UserProfile data."""
+        user_data = validated_data.pop('user', None)
+        if user_data is not None:
+            if 'email' in user_data:
+                raise exceptions.ValidationError('Email field is not allowed to be updated.')
+
+            user = instance.user
+            password = user_data.get('password', None)
+            if password is not None:
+                user.set_password(password)
+            user.save()
+
+        instance.first_name = validated_data.get('first_name', instance.first_name)
+        instance.last_name = validated_data.get('last_name', instance.last_name)
+        instance.address = validated_data.get('address', instance.address)
+        instance.country = validated_data.get('country', instance.country)
+        instance.city = validated_data.get('city', instance.city)
+        instance.zip_code = validated_data.get('zip_code', instance.zip_code)
+        instance.save()
+
+        return instance
+
 
 
 class AuthTokenSerializer(serializers.Serializer):
