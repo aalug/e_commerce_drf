@@ -12,6 +12,7 @@ from users.models import UserProfile
 
 CREATE_USER_URL = reverse('users:create')
 TOKEN_URL = reverse('users:token')
+PROFILE_URL = reverse('users:profile')
 
 
 def create_user(**params):
@@ -113,3 +114,87 @@ class PublicUserApiTests(TestCase):
 
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertNotIn('token', res.data)
+
+    def test_retrieve_user_unauthorized(self):
+        """Test authentication is required to get to the users profile."""
+        res = self.client.get(PROFILE_URL)
+
+        self.assertEqual(res.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_update_user_unauthorized(self):
+        """Test authentication is required to update the users profile."""
+        res = self.client.patch(PROFILE_URL, {})
+
+        self.assertEqual(res.status_code, status.HTTP_401_UNAUTHORIZED)
+
+
+class PrivateUserApiTests(TestCase):
+    """Test API requests that require authentication."""
+
+    def setUp(self):
+        self.client = APIClient()
+        self.user = create_user(
+            email='user@example.com',
+            password='password123'
+        )
+        UserProfile.objects.create(
+            user=self.user
+        )
+        self.client.force_authenticate(user=self.user)
+
+    def test_retrieve_profile(self):
+        """Test retrieving a profile for logged in user is successful."""
+        res = self.client.get(PROFILE_URL)
+        user = res.data['user']
+
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertEqual(user['email'], self.user.email)
+        self.assertIn('first_name', res.data)
+        self.assertIn('last_name', res.data)
+        self.assertIn('address', res.data)
+        self.assertIn('country', res.data)
+        self.assertIn('city', res.data)
+        self.assertIn('zip_code', res.data)
+
+    def test_post_profile_not_allowed(self):
+        """Test POST is not allowed for the 'profile' endpoint."""
+        res = self.client.post(PROFILE_URL, {})
+
+        self.assertEqual(res.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+
+    def test_update_password(self):
+        """Test updating the user password."""
+        payload = {'user': {'password': 'new_password'}}
+        res = self.client.patch(PROFILE_URL, payload, format='json')
+
+        self.user.refresh_from_db()
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertTrue(self.user.check_password(payload['user']['password']))
+
+    def test_update_email_not_allowed(self):
+        """Test that updating an email is not allowed."""
+        payload = {'user': {'email': 'new_email@example.com'}}
+        res = self.client.patch(PROFILE_URL, payload, format='json')
+
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_update_profile(self):
+        """Test updating profile information is successful."""
+        payload = {
+            'first_name': 'John',
+            'last_name': 'Test',
+            'address': 'some address 12/3',
+            'country': 'Poland',
+            'city': 'My city',
+            'zip_code': '12-345'
+        }
+        res = self.client.patch(PROFILE_URL, payload, format='json')
+        profile = UserProfile.objects.filter(user=self.user).first()
+
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertEqual(profile.first_name, payload['first_name'])
+        self.assertEqual(profile.last_name, payload['last_name'])
+        self.assertEqual(profile.address, payload['address'])
+        self.assertEqual(profile.country, payload['country'])
+        self.assertEqual(profile.city, payload['city'])
+        self.assertEqual(profile.zip_code, payload['zip_code'])
