@@ -2,7 +2,9 @@
 Serializers for the users API.
 """
 from django.contrib.auth import get_user_model, authenticate
+from django.utils.http import urlsafe_base64_decode
 from django.utils.translation import gettext as _
+from django.contrib.auth.tokens import PasswordResetTokenGenerator
 
 from rest_framework import serializers, exceptions
 
@@ -84,7 +86,6 @@ class UserProfileSerializer(serializers.ModelSerializer):
         return instance
 
 
-
 class AuthTokenSerializer(serializers.Serializer):
     """Serializer for the user auth token."""
     email = serializers.EmailField(required=True)
@@ -109,3 +110,40 @@ class AuthTokenSerializer(serializers.Serializer):
 
         attrs['user'] = user
         return attrs
+
+
+class EmailSerializer(serializers.Serializer):
+    """Email serializer for handling resetting a password."""
+    email = serializers.EmailField()
+
+    class Meta:
+        fields = ['email']
+
+
+class ResetPasswordSerializer(serializers.Serializer):
+
+    password = serializers.CharField(
+        write_only=True,
+        min_length=6
+    )
+
+    class Meta:
+        fields = ['password']
+
+    def validate(self, data):
+        password = data.get('password')
+        token = self.context.get('kwargs').get('token')
+        encoded_pk = self.context.get('kwargs').get('encoded_pk')
+
+        if token is None or encoded_pk is None:
+            raise serializers.ValidationError('Missing data.')
+
+        pk = urlsafe_base64_decode(encoded_pk).decode()
+        user = get_user_model().objects.get(pk=pk)
+
+        if not PasswordResetTokenGenerator().check_token(user, token):
+            raise serializers.ValidationError('The reset token is invalid.')
+
+        user.set_password(password)
+        user.save()
+        return data
