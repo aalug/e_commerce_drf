@@ -121,7 +121,7 @@ class EmailSerializer(serializers.Serializer):
 
 
 class ResetPasswordSerializer(serializers.Serializer):
-
+    """Serializer for resetting a password."""
     password = serializers.CharField(
         write_only=True,
         min_length=6
