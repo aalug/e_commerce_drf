@@ -105,9 +105,14 @@ class ProductAttributeValue(models.Model):
 class Product(models.Model):
     """Product details table."""
     name = models.CharField(max_length=200, unique=True)
-    slug = models.SlugField(max_length=255, unique=True)
+    slug = models.SlugField(
+        max_length=255,
+        unique=True,
+        null=True,
+        blank=True
+    )
     description = models.TextField()
-    category = TreeManyToManyField(Category)
+    categories = TreeManyToManyField(Category)
     brand = models.ForeignKey(
         Brand,
         on_delete=models.PROTECT

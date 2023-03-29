@@ -9,7 +9,7 @@ from django.test import TestCase
 from django.utils.text import slugify
 
 from inventory.models import Category, Brand, ProductAttribute, ProductAttributeValue, Product, ProductInventory, \
-    ProductImage, Stock
+    Stock
 
 
 class ModelTests(TestCase):
@@ -158,9 +158,9 @@ class ModelTests(TestCase):
             description='shirt',
             brand=brand
         )
-        product.category.add(category)
+        product.categories.add(category)
 
-        self.assertIn(category, product.category.all())
+        self.assertIn(category, product.categories.all())
 
     def test_product_slug(self):
         """Test that product slug is created on save."""
