@@ -30,6 +30,8 @@ class Category(MPTTModel):
     slug = models.SlugField(
         max_length=140,
         unique=True,
+        blank=True,
+        null=True,
         verbose_name=_('category safe URL')
     )
     is_active = models.BooleanField(default=True)
