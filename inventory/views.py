@@ -3,8 +3,8 @@ Views for the inventory app.
 """
 from rest_framework import generics
 
-from .models import Product, Category
-from .serializers import ProductSerializer, ProductDetailSerializer, CategorySerializer
+from .models import Product, Category, ProductAttributeValue
+from .serializers import ProductSerializer, ProductDetailSerializer, CategorySerializer, ProductAttributeValueSerializer
 
 
 class ListMainCategoriesAPIView(generics.ListAPIView):
@@ -42,3 +42,10 @@ class ListProductsByCategory(generics.ListAPIView):
         return Product.objects.filter(
             categories__pk__in=[pk]
         )
+
+
+class ListAllAttributeValues(generics.ListAPIView):
+    """List all product attribute values. It's designed to be a list
+       from which users can choose values to filter products."""
+    serializer_class = ProductAttributeValueSerializer
+    queryset = ProductAttributeValue.objects.all()

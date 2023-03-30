@@ -203,9 +203,10 @@ class ModelTests(TestCase):
             product=product,
             price='50.50'
         )
-
+        product_inventory.save()
+        first_part_patters = '^[A-Z0-9]{7}'
         time_pattern = '\d{14}'
-        pattern = fr'{product_inventory.id}-{product.name[:3].upper()}-{product.brand.name[:3].upper()}-{time_pattern}'
+        pattern = fr'{first_part_patters}-{product.name[-3:].upper()}-{product.brand.name[:3].upper()}-{time_pattern}'
 
         self.assertRegex(product_inventory.code, pattern)
 
@@ -271,8 +272,8 @@ class ModelTests(TestCase):
         with self.assertRaises(ValueError):
             stock.calculate_units(50)
 
-    def test_product_inventory_in_stock_property(self):
-        """Test in_stock property of the product inventory."""
+    def test_product_inventory_stock_property(self):
+        """Test stock property of the product inventory."""
         brand = Brand.objects.create(name='test')
         product = Product.objects.create(
             name='test',
@@ -288,7 +289,4 @@ class ModelTests(TestCase):
             units=10
         )
 
-        self.assertTrue(product_inventory.in_stock)
-        stock.calculate_units(10)
-        stock.save()
-        self.assertFalse(product_inventory.in_stock)
+        self.assertEqual(product_inventory.stock, stock)
