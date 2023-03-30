@@ -2,7 +2,7 @@
 Serializers for the inventory app.
 """
 from rest_framework import serializers
-from .models import Category, Brand, ProductAttribute, ProductAttributeValue, Product
+from .models import Category, Brand, ProductAttribute, ProductAttributeValue, Product, ProductInventory, Stock
 
 
 class ChildCategorySerializer(serializers.ModelSerializer):
@@ -44,9 +44,48 @@ class SimpleCategorySerializer(serializers.ModelSerializer):
         read_only = True
 
 
+class ProductAttributeSerializer(serializers.ModelSerializer):
+    """Serializer for the product attribute model."""
+
+    class Meta:
+        model = ProductAttribute
+        fields = ['name', 'description']
+        read_only = True
+
+
+class ProductAttributeValueSerializer(serializers.ModelSerializer):
+    """Serializer for the product attribute value model."""
+    product_attribute = ProductAttributeSerializer()
+
+    class Meta:
+        model = ProductAttributeValue
+        fields = ['id', 'product_attribute', 'value']
+        read_only = True
+
+
+class StockSerializer(serializers.ModelSerializer):
+    """Serializer for the stock model."""
+
+    class Meta:
+        model = Stock
+        fields = ['units']
+        read_only = True
+
+
+class ProductInventorySerializer(serializers.ModelSerializer):
+    """Serializer for the product inventory."""
+    attribute_values = ProductAttributeValueSerializer(many=True)
+    stock = StockSerializer()
+
+    class Meta:
+        model = ProductInventory
+        fields = ['attribute_values', 'price', 'stock']
+
+
 class ProductSerializer(serializers.ModelSerializer):
     """serializer for the product model."""
     brand = BrandSerializer()
+    all_attribute_values = ProductAttributeValueSerializer(many=True)
 
     class Meta:
         model = Product
@@ -54,7 +93,8 @@ class ProductSerializer(serializers.ModelSerializer):
             'id',
             'name',
             'slug',
-            'brand'
+            'brand',
+            'all_attribute_values'
         ]
         read_only = True
 
@@ -63,6 +103,7 @@ class ProductDetailSerializer(serializers.ModelSerializer):
     """serializer for the product details."""
     brand = BrandSerializer()
     categories = SimpleCategorySerializer(many=True)
+    product_inventories = ProductInventorySerializer(many=True)
 
     class Meta:
         model = Product
@@ -73,6 +114,7 @@ class ProductDetailSerializer(serializers.ModelSerializer):
             'categories',
             'brand',
             'description',
+            'product_inventories',
             'updated_at'
         ]
         read_only = True

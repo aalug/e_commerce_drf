@@ -7,9 +7,10 @@ from django.urls import reverse
 from rest_framework.test import APIClient
 from rest_framework import status
 
-from inventory.models import Category, Product, Brand
+from inventory.models import Category, Product, Brand, ProductAttribute, ProductAttributeValue, ProductInventory
 
 PRODUCTS_URL = reverse('inventory:products')
+ATTRIBUTE_VALUES_URL = reverse('inventory:attribute-values')
 
 
 def create_category(name='Test category', parent=None):
@@ -77,6 +78,8 @@ class ProductsAPITests(TestCase):
                         results[0]['name'] == new_product.name)
         self.assertTrue(results[0]['name'] == self.product.name or
                         results[0]['name'] == new_product.name)
+        self.assertIn('all_attribute_values', results[0])
+        self.assertIn('all_attribute_values', results[1])
 
     def test_retrieve_product_details(self):
         """Test retrieving product details is successful."""
@@ -90,7 +93,22 @@ class ProductsAPITests(TestCase):
         self.assertIn('categories', res.data)
         self.assertIn('brand', res.data)
         self.assertIn('description', res.data)
+        self.assertIn('product_inventories', res.data)
         self.assertIn('updated_at', res.data)
+
+    def test_product_inventories_in_product_details(self):
+        """Test product_inventories field in product details API endpoint."""
+        ProductInventory.objects.create(
+            product=self.product,
+            price='10.50'
+        )
+        url = product_details_url(self.product.id)
+        res = self.client.get(url)
+        product_inventory = res.data['product_inventories'][0]
+
+        self.assertIn('price', product_inventory)
+        self.assertIn('stock', product_inventory)
+        self.assertIn('attribute_values', product_inventory)
 
     def test_product_categories_sort(self):
         """Test categories are sorted by level in ascending order."""
@@ -145,3 +163,26 @@ class ProductsAPITests(TestCase):
         self.assertEqual(res_3.status_code, status.HTTP_200_OK)
         self.assertEqual(len(results_3), 1)
         self.assertEqual(results_3[0]['id'], product_2.id)
+
+    def test_list_all_attribute_values(self):
+        """Test listing all attribute values."""
+        pa = ProductAttribute.objects.create(name='color')
+        ProductAttributeValue.objects.create(
+            product_attribute=pa,
+            value='red'
+        )
+        ProductAttributeValue.objects.create(
+            product_attribute=pa,
+            value='blue'
+        )
+        res = self.client.get(ATTRIBUTE_VALUES_URL)
+
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        results = res.data['results']
+        self.assertEqual(len(results), 2)
+        self.assertTrue(
+            (results[0]['value'] == 'red' and
+             results[1]['value'] == 'blue') or
+            (results[0]['value'] == 'blue' and
+             results[1]['value'] == 'red')
+        )

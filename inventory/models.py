@@ -3,6 +3,8 @@ Models for the inventory app.
 """
 import datetime
 import os
+import random
+import string
 import uuid
 
 from django.db import models
@@ -101,6 +103,9 @@ class ProductAttributeValue(models.Model):
     )
     value = models.CharField(max_length=255)
 
+    def __str__(self):
+        return f'{self.product_attribute}: {self.value}'
+
 
 class Product(models.Model):
     """Product details table."""
@@ -121,6 +126,21 @@ class Product(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    @property
+    def product_inventories(self):
+        """Return all product inventory object associated with this product."""
+        return ProductInventory.objects.filter(product=self)
+
+    @property
+    def all_attribute_values(self):
+        """Attribute values of all product inventories
+           associated with this product."""
+        attr_values = []
+        for prod_inv in self.product_inventories:
+            for attr in prod_inv.attribute_values.all():
+                attr_values.append(attr)
+        return attr_values
+
     def __str__(self):
         return self.name
 
@@ -136,6 +156,8 @@ class ProductInventory(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     code = models.CharField(
         max_length=30,
+        null=True,
+        blank=True,
         unique=True,
         verbose_name=_('unique product code')
     )
@@ -151,10 +173,9 @@ class ProductInventory(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     @property
-    def in_stock(self):
-        """Is the product in stock."""
-        stock = Stock.objects.filter(product_inventory=self).first()
-        return stock.units > 0
+    def stock(self):
+        """Return stock of this product inventory. """
+        return Stock.objects.filter(product_inventory=self).first()
 
     def generate_product_code(self):
         """Generate a unique code for a product."""
@@ -163,14 +184,17 @@ class ProductInventory(models.Model):
         # Get the current time and date
         now = datetime.datetime.now()
         time = now.strftime('%Y%m%d%H%M%S')
-
+        code = ''.join(random.choices(string.ascii_letters + string.digits, k=7))
         # Combine the elements to create the product code
-        return f'{self.id}-{self.product.name[:3]}-{brand_initials}-{time}'.upper()
+        return f'{code}-{self.product.name[-3:]}-{brand_initials}-{time}'.upper()
 
     def save(self, *args, **kwargs):
         """Save and generate unique code."""
-        super().save(*args, **kwargs)
         self.code = self.generate_product_code()
+        return super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f'{self.product} {self.id}'
 
 
 class ProductImage(models.Model):
