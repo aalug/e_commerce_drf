@@ -1,15 +1,17 @@
 """
 Tests for the inventory app models.
 """
-import tempfile
-
-from PIL import Image
 from django.db import IntegrityError
 from django.test import TestCase
 from django.utils.text import slugify
 
-from inventory.models import Category, Brand, ProductAttribute, ProductAttributeValue, Product, ProductInventory, \
-    Stock
+from inventory.models import (Category,
+                              Brand,
+                              ProductAttribute,
+                              ProductAttributeValue,
+                              Product,
+                              ProductInventory,
+                              Stock)
 
 
 class ModelTests(TestCase):

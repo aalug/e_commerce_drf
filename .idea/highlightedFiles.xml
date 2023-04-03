@@ -3,13 +3,14 @@
   <component name="ProjectTreeColorHighlighter">
     <files>
       <node color="2" path="$PROJECT_DIR$/inventory" />
+      <node color="4" path="$PROJECT_DIR$/orders" />
       <node color="1" path="$PROJECT_DIR$/users" />
     </files>
     <colors>
       <color id="1" value="#250c19" name="Color 1" enabled="true" />
       <color id="2" value="#000000" name="Color 2" enabled="true" />
       <color id="3" value="#3f371b" name="Color 3" enabled="true" />
-      <color id="4" value="#162c16" name="Color 4" enabled="true" />
+      <color id="4" value="#0a150a" name="Color 4" enabled="true" />
       <color id="5" value="#0f2f47" name="Color 5" enabled="true" />
       <color id="6" value="#171a34" name="Color 6" enabled="true" />
       <color id="7" value="#311333" name="Color 7" enabled="true" />

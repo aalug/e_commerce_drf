@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'mptt',
     'users',
     'inventory',
+    'orders',
 ]
 
 MIDDLEWARE = [
