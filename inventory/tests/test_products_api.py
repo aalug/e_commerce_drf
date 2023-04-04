@@ -1,6 +1,7 @@
 """
 Tests for API calls that retrieve products.
 """
+from _decimal import Decimal
 from django.test import TestCase
 from django.urls import reverse
 
@@ -37,6 +38,29 @@ def create_product(brand=None, new_categories=None, **params):
             product.categories.add(cat.id)
 
     return product
+
+
+def create_product_inventory(product, price='10.00', attribute_values=None):
+    """Create and return a product inventory."""
+    product_inventory = ProductInventory.objects.create(
+        product=product,
+        price=price
+    )
+    if attribute_values:
+        for attr in attribute_values:
+            product_inventory.attribute_values.add(attr)
+    return product_inventory
+
+
+def create_attribute_value(attr_name='test attr', attr_value='test value'):
+    """Create and return a product attribute value."""
+    product_attribute = ProductAttribute.objects.create(
+        name=attr_name
+    )
+    return ProductAttributeValue.objects.create(
+        product_attribute=product_attribute,
+        value=attr_value
+    )
 
 
 def product_details_url(product_id):
@@ -80,6 +104,8 @@ class ProductsAPITests(TestCase):
                         results[0]['name'] == new_product.name)
         self.assertIn('all_attribute_values', results[0])
         self.assertIn('all_attribute_values', results[1])
+        self.assertIn('price', results[0])
+        self.assertIn('price', results[1])
 
     def test_retrieve_product_details(self):
         """Test retrieving product details is successful."""
@@ -186,3 +212,77 @@ class ProductsAPITests(TestCase):
             (results[0]['value'] == 'blue' and
              results[1]['value'] == 'red')
         )
+
+    def test_filter_products_by_attribute_values(self):
+        """Test filtering products by attribute values."""
+        attr_value = create_attribute_value()
+        product_inventory = create_product_inventory(
+            product=self.product,
+            attribute_values=[attr_value]
+        )
+        other_product = create_product(name='other product')
+        create_product_inventory(other_product)
+
+        res = self.client.get(PRODUCTS_URL, {'attribute-values': attr_value.id})
+        results = res.data['results']
+
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(results), 1)
+        self.assertEqual(results[0]['id'], self.product.id)
+        self.assertEqual(results[0]['price'], Decimal(product_inventory.price))
+        self.assertEqual(results[0]['all_attribute_values'][0]['id'], attr_value.id)
+
+    def test_filter_products_by_brand(self):
+        """Test filtering products by brands."""
+        create_product_inventory(
+            product=self.product
+        )
+        brand_name = 'brand to test filter'
+        new_brand = Brand.objects.create(
+            name=brand_name
+        )
+        to_find_product = create_product(
+            brand=new_brand,
+            name='product to find'
+        )
+        create_product_inventory(to_find_product)
+
+        res = self.client.get(PRODUCTS_URL, {'brand': new_brand.id})
+        results = res.data['results']
+
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(results), 1)
+        self.assertEqual(results[0]['id'], to_find_product.id)
+        self.assertEqual(results[0]['brand']['id'], new_brand.id)
+        self.assertEqual(results[0]['brand']['name'], new_brand.name)
+
+    def test_filter_products_by_price_range(self):
+        """Test filtering products by price range."""
+        product_inventory = create_product_inventory(
+            product=self.product,
+            price='1000.00'
+        )
+        other_product = create_product(name='other product')
+        other_product_inventory = create_product_inventory(product=other_product, price='5.00')
+
+        res_1 = self.client.get(PRODUCTS_URL, {'price': '500,1100'})
+        results_1 = res_1.data['results']
+
+        self.assertEqual(res_1.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(results_1), 1)
+        self.assertEqual(results_1[0]['id'], self.product.id)
+        self.assertEqual(results_1[0]['price'], Decimal(product_inventory.price))
+
+        res_2 = self.client.get(PRODUCTS_URL, {'price': '0,10'})
+        results_2 = res_2.data['results']
+
+        self.assertEqual(res_1.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(results_2), 1)
+        self.assertEqual(results_2[0]['id'], other_product.id)
+        self.assertEqual(results_2[0]['price'], Decimal(other_product_inventory.price))
+
+    def test_filter_products_by_price_invalid_range(self):
+        """Test error is raised if the price range is invalid."""
+        res = self.client.get(PRODUCTS_URL, {'price': '100,5'})
+
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)

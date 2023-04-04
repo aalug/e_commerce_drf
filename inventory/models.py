@@ -128,8 +128,14 @@ class Product(models.Model):
 
     @property
     def product_inventories(self):
-        """Return all product inventory object associated with this product."""
         return ProductInventory.objects.filter(product=self)
+
+    @property
+    def price(self):
+        """Return the price of the first product inventory associated with this product."""
+        product_inventory = self.product_inventories.first()
+        if product_inventory:
+            return product_inventory.price
 
     @property
     def all_attribute_values(self):
@@ -153,7 +159,11 @@ class Product(models.Model):
 
 class ProductInventory(models.Model):
     """Details for the product model."""
-    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    product = models.ForeignKey(
+        Product,
+        on_delete=models.CASCADE,
+        related_name='inventories'
+    )
     code = models.CharField(
         max_length=30,
         null=True,
