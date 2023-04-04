@@ -94,6 +94,7 @@ class ProductSerializer(serializers.ModelSerializer):
             'name',
             'slug',
             'brand',
+            'price',
             'all_attribute_values'
         ]
         read_only = True

@@ -1,7 +1,9 @@
 """
 Views for the inventory app.
 """
+from _decimal import Decimal
 from rest_framework import generics
+from rest_framework.exceptions import ValidationError
 
 from .models import Product, Category, ProductAttributeValue
 from .serializers import ProductSerializer, ProductDetailSerializer, CategorySerializer, ProductAttributeValueSerializer
@@ -24,24 +26,57 @@ class RetrieveCategoryAPIView(generics.RetrieveAPIView):
 class ListProductsAPIView(generics.ListAPIView):
     """List products with general information."""
     serializer_class = ProductSerializer
-    queryset = Product.objects.all()
+
+    @staticmethod
+    def _params_to_ints(param_array):
+        """Convert a list of string IDs to a list of integers."""
+        return [int(str_id) for str_id in param_array.split(',')]
+
+    def get_queryset(self):
+        # Check if the category id was provided
+        # if it was, filter by it
+        category_pk = self.kwargs.get('pk')
+        if category_pk:
+            queryset = Product.objects.filter(
+                categories__pk__in=[category_pk]
+            )
+        # else, set queryset to all products
+        else:
+            queryset = Product.objects.all()
+
+        attribute_values = self.request.query_params.get('attribute-values')
+        brand = self.request.query_params.get('brand')
+        price_range = self.request.query_params.get('price')
+
+        # Filter by attribute values
+        if attribute_values:
+            attr_ids = self._params_to_ints(attribute_values)
+            queryset = queryset.filter(inventories__attribute_values__id__in=attr_ids)
+
+        # Filter by brands
+        if brand:
+            brand_ids = self._params_to_ints(brand)
+            queryset = queryset.filter(brand__id__in=brand_ids)
+
+        # Filter by price range
+        if price_range:
+            price_range = price_range.split(',')
+            if len(price_range) == 2:
+                start_price, end_price = price_range
+                if Decimal(start_price) > Decimal(end_price):
+                    raise ValidationError(
+                        'Invalid price range. The start price has to be lower than the end price.'
+                    )
+                queryset = queryset.filter(
+                    inventories__price__range=(start_price, end_price)
+                )
+        return queryset
 
 
 class RetrieveProductAPIView(generics.RetrieveAPIView):
     """Retrieve product detail information."""
     serializer_class = ProductDetailSerializer
     queryset = Product.objects.all()
-
-
-class ListProductsByCategory(generics.ListAPIView):
-    """List products by category."""
-    serializer_class = ProductSerializer
-
-    def get_queryset(self):
-        pk = self.kwargs.get('pk')
-        return Product.objects.filter(
-            categories__pk__in=[pk]
-        )
 
 
 class ListAllAttributeValues(generics.ListAPIView):
