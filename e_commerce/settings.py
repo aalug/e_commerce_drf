@@ -48,6 +48,8 @@ INSTALLED_APPS = [
     'users',
     'inventory',
     'orders',
+    'django_elasticsearch_dsl',
+    'django_elasticsearch_dsl_drf',
 ]
 
 MIDDLEWARE = [
@@ -133,7 +135,6 @@ MEDIA_URL = '/static/media/'
 MEDIA_ROOT = '/vol/web/media'
 STATIC_ROOT = '/vol/web/static'
 
-
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
 
@@ -155,3 +156,9 @@ CORS_ALLOW_CREDENTIALS = True
 CORS_ORIGIN_ALLOW_ALL = True
 
 HOST = os.environ.get('HOST')
+
+ELASTICSEARCH_DSL = {
+    'default': {
+        'hosts': 'search'
+    },
+}

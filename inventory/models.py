@@ -18,7 +18,7 @@ def image_file_path(instance, filename):
     """Generate file path for a new image."""
     ext = os.path.splitext(filename)[1]
     filename = f'{uuid.uuid4()}{ext}'
-    return os.path.join('uploads', 'products', filename)
+    return os.path.join('uploads', 'product', filename)
 
 
 class Category(MPTTModel):
@@ -138,6 +138,14 @@ class Product(models.Model):
             return product_inventory.price
 
     @property
+    def image(self):
+        product_inventory = self.product_inventories.first()
+        if product_inventory:
+            return ProductImage.objects.filter(
+                product_inventory=product_inventory
+            ).first()
+
+    @property
     def all_attribute_values(self):
         """Attribute values of all product inventories
            associated with this product."""
@@ -146,6 +154,25 @@ class Product(models.Model):
             for attr in prod_inv.attribute_values.all():
                 attr_values.append(attr)
         return attr_values
+
+    # Indexing for Elasticsearch
+    @property
+    def attribute_values_indexing(self):
+        """Property for elasticsearch indexing. For search,
+           only attribute values and names are needed, not entire objects."""
+        return [
+            f'{attr.product_attribute.name} {attr.value}'
+            for attr in self.all_attribute_values
+        ]
+
+    @property
+    def categories_indexing(self):
+        """Property for elasticsearch indexing. For search,
+           only names of categories are needed, not entire objects."""
+        return [category.name for category in self.categories.all()]
+
+    def brand_indexing(self):
+        return self.brand.name
 
     def __str__(self):
         return self.name
@@ -211,7 +238,8 @@ class ProductImage(models.Model):
     """The product image table."""
     product_inventory = models.ForeignKey(
         ProductInventory,
-        on_delete=models.CASCADE
+        on_delete=models.CASCADE,
+        related_name='images'
     )
     image = models.ImageField(
         verbose_name=_('product image'),
