@@ -1,8 +1,18 @@
 """
 Serializers for the inventory app.
 """
+from django_elasticsearch_dsl_drf.serializers import DocumentSerializer
 from rest_framework import serializers
-from .models import Category, Brand, ProductAttribute, ProductAttributeValue, Product, ProductInventory, Stock
+
+from .documents import ProductDocument
+from .models import (Category,
+                     Brand,
+                     ProductAttribute,
+                     ProductAttributeValue,
+                     Product,
+                     ProductInventory,
+                     Stock,
+                     ProductImage)
 
 
 class ChildCategorySerializer(serializers.ModelSerializer):
@@ -72,20 +82,30 @@ class StockSerializer(serializers.ModelSerializer):
         read_only = True
 
 
+class ImageSerializer(serializers.ModelSerializer):
+    """Serializer for the product image model."""
+
+    class Meta:
+        model = ProductImage
+        fields = ['image', 'alt_text']
+
+
 class ProductInventorySerializer(serializers.ModelSerializer):
     """Serializer for the product inventory."""
     attribute_values = ProductAttributeValueSerializer(many=True)
     stock = StockSerializer()
+    images = ImageSerializer(many=True)
 
     class Meta:
         model = ProductInventory
-        fields = ['attribute_values', 'price', 'stock']
+        fields = ['attribute_values', 'price', 'images', 'stock']
 
 
 class ProductSerializer(serializers.ModelSerializer):
     """serializer for the product model."""
     brand = BrandSerializer()
     all_attribute_values = ProductAttributeValueSerializer(many=True)
+    image = ImageSerializer()
 
     class Meta:
         model = Product
@@ -95,6 +115,7 @@ class ProductSerializer(serializers.ModelSerializer):
             'slug',
             'brand',
             'price',
+            'image',
             'all_attribute_values'
         ]
         read_only = True
@@ -129,3 +150,13 @@ class ProductDetailSerializer(serializers.ModelSerializer):
             key=lambda c: c['level']
         )
         return response
+
+
+class ProductSearchSerializer(DocumentSerializer):
+    """Serializer only for handling searching products."""
+
+    class Meta:
+        document = ProductDocument
+        fields = [
+            'id'
+        ]

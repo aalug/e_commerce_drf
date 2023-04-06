@@ -2,11 +2,18 @@
 Views for the inventory app.
 """
 from _decimal import Decimal
-from rest_framework import generics
+from elasticsearch_dsl import Q
+from rest_framework import generics, status
 from rest_framework.exceptions import ValidationError
+from rest_framework.response import Response
 
+from .documents import ProductDocument
 from .models import Product, Category, ProductAttributeValue
-from .serializers import ProductSerializer, ProductDetailSerializer, CategorySerializer, ProductAttributeValueSerializer
+from .serializers import (ProductSerializer,
+                          ProductDetailSerializer,
+                          CategorySerializer,
+                          ProductAttributeValueSerializer,
+                          ProductSearchSerializer)
 
 
 class ListMainCategoriesAPIView(generics.ListAPIView):
@@ -26,6 +33,7 @@ class RetrieveCategoryAPIView(generics.RetrieveAPIView):
 class ListProductsAPIView(generics.ListAPIView):
     """List products with general information."""
     serializer_class = ProductSerializer
+    search_document = ProductDocument
 
     @staticmethod
     def _params_to_ints(param_array):
@@ -47,6 +55,7 @@ class ListProductsAPIView(generics.ListAPIView):
         attribute_values = self.request.query_params.get('attribute-values')
         brand = self.request.query_params.get('brand')
         price_range = self.request.query_params.get('price')
+        search_query = self.request.query_params.get('search')
 
         # Filter by attribute values
         if attribute_values:
@@ -70,6 +79,32 @@ class ListProductsAPIView(generics.ListAPIView):
                 queryset = queryset.filter(
                     inventories__price__range=(start_price, end_price)
                 )
+
+        # Search
+        if search_query:
+            try:
+                q = Q(
+                    'multi_match',
+                    query=search_query,
+                    fields=[
+                        'name',
+                        'description',
+                        'categories',
+                        'brand',
+                        'attributes'
+                    ],
+                    fuzziness='auto',
+                    minimum_should_match=1
+                )
+                search = ProductDocument.search().query(q).execute()
+                # data is an array of dicts that contain products ids
+                data = ProductSearchSerializer(search, many=True).data
+                products_ids = [d['id'] for d in data]
+                queryset = Product.objects.filter(id__in=products_ids)
+
+            except Exception as e:
+                return Response(e, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
         return queryset
 
 

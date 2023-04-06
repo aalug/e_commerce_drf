@@ -1,0 +1,422 @@
+[
+  {
+    "model": "inventory.category",
+    "pk": 1,
+    "fields": {
+      "name": "Fiction",
+      "slug": "fiction",
+      "is_active": true,
+      "parent": null,
+      "lft": 1,
+      "rght": 22,
+      "tree_id": 2,
+      "level": 0
+    }
+  },
+  {
+    "model": "inventory.category",
+    "pk": 2,
+    "fields": {
+      "name": "Romance",
+      "slug": "romance",
+      "is_active": true,
+      "parent": 1,
+      "lft": 8,
+      "rght": 13,
+      "tree_id": 2,
+      "level": 1
+    }
+  },
+  {
+    "model": "inventory.category",
+    "pk": 3,
+    "fields": {
+      "name": "Historical Romance",
+      "slug": "historical-romance",
+      "is_active": true,
+      "parent": 2,
+      "lft": 11,
+      "rght": 12,
+      "tree_id": 2,
+      "level": 2
+    }
+  },
+  {
+    "model": "inventory.category",
+    "pk": 4,
+    "fields": {
+      "name": "Contemporary Romance",
+      "slug": "contemporary-romance",
+      "is_active": true,
+      "parent": 2,
+      "lft": 9,
+      "rght": 10,
+      "tree_id": 2,
+      "level": 2
+    }
+  },
+  {
+    "model": "inventory.category",
+    "pk": 5,
+    "fields": {
+      "name": "Mystery & Thriller",
+      "slug": "mystery-thriller",
+      "is_active": true,
+      "parent": 1,
+      "lft": 2,
+      "rght": 7,
+      "tree_id": 2,
+      "level": 1
+    }
+  },
+  {
+    "model": "inventory.category",
+    "pk": 6,
+    "fields": {
+      "name": "Crime Fiction",
+      "slug": "crime-fiction",
+      "is_active": true,
+      "parent": 5,
+      "lft": 3,
+      "rght": 4,
+      "tree_id": 2,
+      "level": 2
+    }
+  },
+  {
+    "model": "inventory.category",
+    "pk": 7,
+    "fields": {
+      "name": "Psychological Thriller",
+      "slug": "psychological-thriller",
+      "is_active": true,
+      "parent": 5,
+      "lft": 5,
+      "rght": 6,
+      "tree_id": 2,
+      "level": 2
+    }
+  },
+  {
+    "model": "inventory.category",
+    "pk": 8,
+    "fields": {
+      "name": "Science Fiction & Fantasy",
+      "slug": "science-fiction-fantasy",
+      "is_active": true,
+      "parent": 1,
+      "lft": 14,
+      "rght": 21,
+      "tree_id": 2,
+      "level": 1
+    }
+  },
+  {
+    "model": "inventory.category",
+    "pk": 9,
+    "fields": {
+      "name": "High Fantasy",
+      "slug": "high-fantasy",
+      "is_active": true,
+      "parent": 8,
+      "lft": 17,
+      "rght": 18,
+      "tree_id": 2,
+      "level": 2
+    }
+  },
+  {
+    "model": "inventory.category",
+    "pk": 10,
+    "fields": {
+      "name": "Cyberpunk",
+      "slug": "cyberpunk",
+      "is_active": true,
+      "parent": 8,
+      "lft": 15,
+      "rght": 16,
+      "tree_id": 2,
+      "level": 2
+    }
+  },
+  {
+    "model": "inventory.category",
+    "pk": 11,
+    "fields": {
+      "name": "Space Opera",
+      "slug": "space-opera",
+      "is_active": true,
+      "parent": 8,
+      "lft": 19,
+      "rght": 20,
+      "tree_id": 2,
+      "level": 2
+    }
+  },
+  {
+    "model": "inventory.category",
+    "pk": 12,
+    "fields": {
+      "name": "Non-Fiction",
+      "slug": "non-fiction",
+      "is_active": true,
+      "parent": null,
+      "lft": 1,
+      "rght": 22,
+      "tree_id": 3,
+      "level": 0
+    }
+  },
+  {
+    "model": "inventory.category",
+    "pk": 13,
+    "fields": {
+      "name": "Biography & Memoir",
+      "slug": "biography-memoir",
+      "is_active": true,
+      "parent": 12,
+      "lft": 2,
+      "rght": 9,
+      "tree_id": 3,
+      "level": 1
+    }
+  },
+  {
+    "model": "inventory.category",
+    "pk": 14,
+    "fields": {
+      "name": "Autobiography",
+      "slug": "autobiography",
+      "is_active": true,
+      "parent": 13,
+      "lft": 3,
+      "rght": 4,
+      "tree_id": 3,
+      "level": 2
+    }
+  },
+  {
+    "model": "inventory.category",
+    "pk": 15,
+    "fields": {
+      "name": "Memoir",
+      "slug": "memoir",
+      "is_active": true,
+      "parent": 13,
+      "lft": 5,
+      "rght": 6,
+      "tree_id": 3,
+      "level": 2
+    }
+  },
+  {
+    "model": "inventory.category",
+    "pk": 16,
+    "fields": {
+      "name": "Political Biography",
+      "slug": "political-biography",
+      "is_active": true,
+      "parent": 13,
+      "lft": 7,
+      "rght": 8,
+      "tree_id": 3,
+      "level": 2
+    }
+  },
+  {
+    "model": "inventory.category",
+    "pk": 17,
+    "fields": {
+      "name": "Business & Finance",
+      "slug": "business-finance",
+      "is_active": true,
+      "parent": 12,
+      "lft": 10,
+      "rght": 15,
+      "tree_id": 3,
+      "level": 1
+    }
+  },
+  {
+    "model": "inventory.category",
+    "pk": 18,
+    "fields": {
+      "name": "Entrepreneurship",
+      "slug": "entrepreneurship",
+      "is_active": true,
+      "parent": 17,
+      "lft": 11,
+      "rght": 12,
+      "tree_id": 3,
+      "level": 2
+    }
+  },
+  {
+    "model": "inventory.category",
+    "pk": 19,
+    "fields": {
+      "name": "Investing",
+      "slug": "investing",
+      "is_active": true,
+      "parent": 17,
+      "lft": 13,
+      "rght": 14,
+      "tree_id": 3,
+      "level": 2
+    }
+  },
+  {
+    "model": "inventory.category",
+    "pk": 20,
+    "fields": {
+      "name": "Health & Fitness",
+      "slug": "health-fitness",
+      "is_active": true,
+      "parent": 12,
+      "lft": 16,
+      "rght": 21,
+      "tree_id": 3,
+      "level": 1
+    }
+  },
+  {
+    "model": "inventory.category",
+    "pk": 21,
+    "fields": {
+      "name": "Nutrition",
+      "slug": "nutrition",
+      "is_active": true,
+      "parent": 20,
+      "lft": 19,
+      "rght": 20,
+      "tree_id": 3,
+      "level": 2
+    }
+  },
+  {
+    "model": "inventory.category",
+    "pk": 22,
+    "fields": {
+      "name": "Exercise",
+      "slug": "exercise",
+      "is_active": true,
+      "parent": 20,
+      "lft": 17,
+      "rght": 18,
+      "tree_id": 3,
+      "level": 2
+    }
+  },
+  {
+    "model": "inventory.category",
+    "pk": 23,
+    "fields": {
+      "name": "Children's Books",
+      "slug": "childrens-books",
+      "is_active": true,
+      "parent": null,
+      "lft": 1,
+      "rght": 16,
+      "tree_id": 1,
+      "level": 0
+    }
+  },
+  {
+    "model": "inventory.category",
+    "pk": 24,
+    "fields": {
+      "name": "Picture Books",
+      "slug": "picture-books",
+      "is_active": true,
+      "parent": 23,
+      "lft": 10,
+      "rght": 15,
+      "tree_id": 1,
+      "level": 1
+    }
+  },
+  {
+    "model": "inventory.category",
+    "pk": 25,
+    "fields": {
+      "name": "Board Books",
+      "slug": "board-books",
+      "is_active": true,
+      "parent": 24,
+      "lft": 11,
+      "rght": 12,
+      "tree_id": 1,
+      "level": 2
+    }
+  },
+  {
+    "model": "inventory.category",
+    "pk": 26,
+    "fields": {
+      "name": "Interactive Books",
+      "slug": "interactive-books",
+      "is_active": true,
+      "parent": 24,
+      "lft": 13,
+      "rght": 14,
+      "tree_id": 1,
+      "level": 2
+    }
+  },
+  {
+    "model": "inventory.category",
+    "pk": 27,
+    "fields": {
+      "name": "Middle Grade",
+      "slug": "middle-grade",
+      "is_active": true,
+      "parent": 23,
+      "lft": 2,
+      "rght": 9,
+      "tree_id": 1,
+      "level": 1
+    }
+  },
+  {
+    "model": "inventory.category",
+    "pk": 28,
+    "fields": {
+      "name": "Adventure",
+      "slug": "adventure",
+      "is_active": true,
+      "parent": 27,
+      "lft": 3,
+      "rght": 4,
+      "tree_id": 1,
+      "level": 2
+    }
+  },
+  {
+    "model": "inventory.category",
+    "pk": 29,
+    "fields": {
+      "name": "Fantasy",
+      "slug": "fantasy",
+      "is_active": true,
+      "parent": 27,
+      "lft": 5,
+      "rght": 6,
+      "tree_id": 1,
+      "level": 2
+    }
+  },
+  {
+    "model": "inventory.category",
+    "pk": 30,
+    "fields": {
+      "name": "Historical Fiction",
+      "slug": "historical-fiction",
+      "is_active": true,
+      "parent": 27,
+      "lft": 7,
+      "rght": 8,
+      "tree_id": 1,
+      "level": 2
+    }
+  }
+]

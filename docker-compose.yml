@@ -31,6 +31,16 @@ services:
       - DB_PASSWORD=admin
     depends_on:
       - db
+  search:
+    container_name: elastic_search
+    image: elasticsearch:7.17.9
+    environment:
+      - cluster.name=ecommerce-elasticsearch
+      - discovery.type=single-node
+    ports:
+      - "9200:9200"
+    depends_on:
+      - db
 
 volumes:
   dev-db-data:
