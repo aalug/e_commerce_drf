@@ -117,10 +117,11 @@ class Product(models.Model):
         blank=True
     )
     description = models.TextField()
-    categories = TreeManyToManyField(Category)
+    categories = TreeManyToManyField(Category, related_name='product')
     brand = models.ForeignKey(
         Brand,
-        on_delete=models.PROTECT
+        on_delete=models.PROTECT,
+        related_name='product'
     )
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -171,6 +172,7 @@ class Product(models.Model):
            only names of categories are needed, not entire objects."""
         return [category.name for category in self.categories.all()]
 
+    @property
     def brand_indexing(self):
         return self.brand.name
 

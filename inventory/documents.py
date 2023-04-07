@@ -25,11 +25,3 @@ class ProductDocument(Document):
             'name',
             'description'
         ]
-        related_models = [Category, ProductAttribute, ProductAttributeValue, Brand]
-
-    def get_queryset(self):
-        """Not mandatory but to improve performance we can select related in one sql request"""
-        return super(ProductDocument, self).get_queryset().select_related(
-            'brand'
-        )
-
