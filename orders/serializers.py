@@ -95,3 +95,4 @@ class GetOrderSerializer(OrderSerializer):
             'total_price',
             'created_at'
         ]
+        read_only = True

@@ -37,3 +37,6 @@ class Order(models.Model):
         for product in self.products.all():
             total += product.price
         return total
+
+    class Meta:
+        ordering = ['-created_at']

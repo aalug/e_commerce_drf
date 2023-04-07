@@ -60,19 +60,27 @@ class ListProductsAPIView(generics.ListAPIView):
         # Filter by attribute values
         if attribute_values:
             attr_ids = self._params_to_ints(attribute_values)
-            queryset = queryset.filter(inventories__attribute_values__id__in=attr_ids)
+            queryset = queryset.filter(inventories__attribute_values__id__in=attr_ids).distinct()
 
         # Filter by brands
         if brand:
             brand_ids = self._params_to_ints(brand)
-            queryset = queryset.filter(brand__id__in=brand_ids)
+            queryset = queryset.filter(brand__id__in=brand_ids).distinct()
 
         # Filter by price range
         if price_range:
             price_range = price_range.split(',')
             if len(price_range) == 2:
                 start_price, end_price = price_range
-                if Decimal(start_price) > Decimal(end_price):
+                try:
+                    start_price = int(start_price)
+                    end_price = int(end_price)
+                except ValueError:
+                    raise ValidationError(
+                        'Invalid price range. The correct format is: int,int.'
+                    )
+
+                if start_price > end_price:
                     raise ValidationError(
                         'Invalid price range. The start price has to be lower than the end price.'
                     )
@@ -100,7 +108,12 @@ class ListProductsAPIView(generics.ListAPIView):
                 # data is an array of dicts that contain products ids
                 data = ProductSearchSerializer(search, many=True).data
                 products_ids = [d['id'] for d in data]
-                queryset = Product.objects.filter(id__in=products_ids)
+
+                # Get the intersection of products_ids and ids of products in the queryset
+                queryset_ids = [q.id for q in queryset]
+                ids = list(set(products_ids) & set(queryset_ids))
+
+                queryset = Product.objects.filter(id__in=ids)
 
             except Exception as e:
                 return Response(e, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
