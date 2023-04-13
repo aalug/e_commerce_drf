@@ -29,10 +29,15 @@ services:
       - DB_NAME=devdb
       - DB_USER=devuser
       - DB_PASSWORD=admin
+      - CELERY_BROKER=amqp://guest:guest@rabbitmq:5672/
     depends_on:
       - db
+      - celery
+      - rabbitmq
+
+  # Elasticsearch
   search:
-    container_name: elastic_search
+    container_name: ecommerce_elasticsearch
     image: elasticsearch:7.17.9
     environment:
       - cluster.name=ecommerce-elasticsearch
@@ -41,6 +46,24 @@ services:
       - "9200:9200"
     depends_on:
       - db
+
+  # Celery worker
+  celery:
+    build: .
+    container_name: ecommerce_celery
+    command: celery -A e_commerce worker -l info
+    volumes:
+      - .:/app/
+    depends_on:
+      - rabbitmq
+
+  # RabbitMQ
+  rabbitmq:
+    container_name: ecommerce_rabbitmq
+    image: rabbitmq:3.11.13-management-alpine
+    ports:
+      - "5672:5672"
+      - "15672:15672"
 
 volumes:
   dev-db-data:

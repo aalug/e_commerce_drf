@@ -15,6 +15,7 @@ from rest_framework.settings import api_settings
 
 from .models import UserProfile
 from .serializers import UserProfileSerializer, AuthTokenSerializer, EmailSerializer, ResetPasswordSerializer
+from .tasks import send_forgot_password_email_task
 
 
 class CreateUserView(generics.CreateAPIView):
@@ -53,15 +54,11 @@ class ForgotPasswordView(generics.GenericAPIView):
         if user:
             encoded_pk = urlsafe_base64_encode(force_bytes(user.pk))
             token = PasswordResetTokenGenerator().make_token(user)
-            reset_url = reverse('users:reset-password',
-                                kwargs={
-                                    'encoded_pk': encoded_pk,
-                                    'token': token
-                                })
-            full_reset_url = f'{settings.HOST}{reset_url}'
+            reset_link = f'{settings.FRONTEND_APP_URL}/reset-password/?pk={encoded_pk}&token={token}'
+            name = user.user_profile.first_name or user.email
+            send_forgot_password_email_task(email, name, reset_link)
             return Response({
-                'message': 'Reset link was created.',
-                'link': full_reset_url
+                'message': 'A reset password link has been sent.'
             },
                 status=status.HTTP_200_OK
             )
