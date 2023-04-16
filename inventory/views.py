@@ -6,6 +6,9 @@ from elasticsearch_dsl import Q
 from rest_framework import generics, status
 from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import cache_page
+from django.views.decorators.vary import vary_on_cookie
 
 from .documents import ProductDocument
 from .models import Product, Category, ProductAttributeValue
@@ -31,7 +34,11 @@ class RetrieveCategoryAPIView(generics.RetrieveAPIView):
 
 
 class ListProductsAPIView(generics.ListAPIView):
-    """List products with general information."""
+    """List products with general information. get_queryset method can
+       handle filtering by category, brand, attribute values, price range and
+       can handle searching for products which is done by using elastic search.
+       Cache is set, so that SQL queries are not needed every time.
+       The cache is set to 30 minutes."""
     serializer_class = ProductSerializer
     search_document = ProductDocument
 
@@ -39,6 +46,11 @@ class ListProductsAPIView(generics.ListAPIView):
     def _params_to_ints(param_array):
         """Convert a list of string IDs to a list of integers."""
         return [int(str_id) for str_id in param_array.split(',')]
+
+    @method_decorator(vary_on_cookie)
+    @method_decorator(cache_page(60 * 30))
+    def dispatch(self, *args, **kwargs):
+        return super(ListProductsAPIView, self).dispatch(*args, **kwargs)
 
     def get_queryset(self):
         # Check if the category id was provided
@@ -129,6 +141,13 @@ class RetrieveProductAPIView(generics.RetrieveAPIView):
 
 class ListAllAttributeValues(generics.ListAPIView):
     """List all product attribute values. It's designed to be a list
-       from which users can choose values to filter products."""
+       from which users can choose values to filter products.
+       Cache is set, so that SQL queries are not needed every time.
+       The cache is set to 60 minutes."""
     serializer_class = ProductAttributeValueSerializer
     queryset = ProductAttributeValue.objects.all()
+
+    @method_decorator(vary_on_cookie)
+    @method_decorator(cache_page(60 * 60))
+    def dispatch(self, *args, **kwargs):
+        return super(ListAllAttributeValues, self).dispatch(*args, **kwargs)
